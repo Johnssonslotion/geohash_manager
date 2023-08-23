@@ -1,0 +1,17 @@
+{
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.formatOnSave": true
+      },
+    "python.analysis.autoSearchPaths": false,
+    "python.analysis.extraPaths": [
+      "./geohash_manger/"
+    ],
+    "python.testing.pytestArgs": [
+      "-v",
+      "-s",
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
+    
+}
