@@ -13,6 +13,7 @@ pydantic = "^2.1.1"
 pygeohash = "^1.2.0"
 rtree = "^1.0.1"
 cartopy = "^0.22.0"
+build = "^0.10.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
