@@ -256,6 +256,7 @@ class GeoUtils:
         """
         input : lat, lng, radius,
         output : polygon,
+        비고 : x,y,r 도 입력가능 하지만 우선순위는 lat,lng,radius
         """
         center = kwargs.get("position", None)
         center = kwargs.get("center", None)
@@ -267,19 +268,21 @@ class GeoUtils:
         r = kwargs.get("r", None)
         radius = kwargs.get("radius", None)
 
-        if radius or r == None:
-            raise NotImplementedError("radius is not implemented")
+        if radius and r == None:
+            raise NotImplementedError("radius is not implemented")  # 둘다 오류일때
         else:
-            radius = radius or r
+            radius = radius or r  ## 우선순위는 radius
         if center:
             circle = CircleShape(center=center, radius=radius)
+            return circle
         elif lat and lng:
             circle = CircleShape(center=(lng, lat), radius=radius)
+            return circle
         elif x and y:
             circle = CircleShape(center=(x, y), radius=radius)
+            return circle
         else:
             raise Exception("position or center should be defined")
-        return circle
 
     @classmethod
     def bbox_rect(cls, **kwargs):
