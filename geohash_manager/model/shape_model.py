@@ -1,4 +1,5 @@
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING, Any
+from typing_extensions import Literal
 from pydantic import (
     AliasChoices,
     AliasPath,
@@ -71,6 +72,23 @@ class RectShape(BaseModel):
     @model_serializer
     def serialize(self):
         return ",".join([str(i) for i in self.items])
+
+    if TYPE_CHECKING:
+        # Ensure type checkers see the correct return type
+        def model_dump(
+            self,
+            *,
+            mode: Literal["json", "python"] | str = "python",
+            include: Any = None,
+            exclude: Any = None,
+            by_alias: bool = False,
+            exclude_unset: bool = False,
+            exclude_defaults: bool = False,
+            exclude_none: bool = False,
+            round_trip: bool = False,
+            warnings: bool = True,
+        ) -> str:
+            ...
 
 
 class CircleShape(BaseModel):
