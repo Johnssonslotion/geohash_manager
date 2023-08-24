@@ -1,4 +1,5 @@
 from collections import deque
+import logging
 import pygeohash as pgh
 import numpy as np
 import rtree as rt
@@ -29,11 +30,21 @@ class GeohashManager(GeoUtils):
         self.precision = kwargs.get("precision", 4)
         self.limits = kwargs.get("limits", 6)
         self.position = kwargs.get("positions", None)
+        self.debug = kwargs.get("debug", False)
         self.tracert = []
         if self.position is not None:
             self.tracert.append(self.position)
         self.mode = kwargs.get("mode", "tracker")
 
+        ## logger
+        self.logger_name = kwargs.get("logger", "geohash_manager")
+        self.logger = logging.getLogger(self.logger_name)
+        sh = logging.StreamHandler()
+        if self.debug:
+            sh.setLevel(logging.DEBUG)
+        else:
+            sh.setLevel(logging.INFO)
+        self.logger.addHandler(sh)
         ##
         self.ret = []
         self.init_shape = None
@@ -91,7 +102,9 @@ class GeohashManager(GeoUtils):
             ratio = difference_area / rect.polygon.area
             if ratio != 1:
                 if ratio < threshold:
-                    print(f"\n id :{i}  ratio : {ratio}, diff_area : {difference_area}")
+                    self.logger.debug(
+                        f"\n id :{i}  ratio : {ratio}, diff_area : {difference_area}"
+                    )
             if ratio == 1:
                 continue  ## 겹치는 영역이 없음
             if ratio != 1:
@@ -120,6 +133,11 @@ class GeohashManager(GeoUtils):
             rect = self.geohash_rect(i)
             difference_area = rect.polygon.difference(self.init_shape).area
             ratio = difference_area / rect.polygon.area
+            if ratio != 1:
+                if ratio < threshold:
+                    self.logger.debug(
+                        f"\n id :{i}  ratio : {ratio}, diff_area : {difference_area}"
+                    )
             if ratio == 1:
                 continue  ## 겹치는 영역이 없음
             if ratio != 1:
@@ -127,5 +145,5 @@ class GeohashManager(GeoUtils):
                     self.ret.append(rect)
                     # temp.append(i)
                 elif len(i) < self.limits:
-                    div_candidate.extend(self.subhash(i, 7))
+                    div_candidate.extend(self.subhash(i, self.limits))
         return self.ret
