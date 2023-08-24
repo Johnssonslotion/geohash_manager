@@ -1,6 +1,7 @@
 import random
+from typing import Union, Dict, Tuple
 import pytest
-from geohash_manager.model import CircleShape, RectShape
+from geohash_manager import CircleShape, RectShape
 
 
 ## #TODO pytest로 테스트 코드?
@@ -69,3 +70,37 @@ def test_spatial_model():
         and case_7.xmax == rect_2[3]
         and case_7.ymax == rect_2[2]
     ), "rect_2"
+
+
+@pytest.mark.parametrize(
+    "test_input, expected",
+    [
+        (
+            {"x": 127.056146, "y": 37.505308, "radius": 20000},
+            {"x": 127.056146, "y": 37.505308, "radius": 20000},
+        ),
+        (
+            (
+                (127.056146, 37.505308, 127.156146, 37.605308),
+                "127.056146,37.505308,127.156146,37.605308",
+            )
+        ),
+    ],
+)
+def test_input_series_test(test_input, expected):
+    if len(test_input) == 3:
+        ret = CircleShape(
+            x=test_input["x"],
+            y=test_input["y"],
+            radius=test_input["radius"],
+        )
+        assert (
+            ret.x == expected["x"]
+            and ret.y == expected["y"]
+            and ret.radius == expected["radius"]
+        )
+    elif len(test_input) == 4:
+        ret = RectShape(bbox=test_input)
+        assert ret.model_dump() == expected
+    else:
+        raise ValueError("test_input is invalid")

@@ -5,6 +5,7 @@ from pydantic import (
     BaseModel,
     Field,
     field_validator,
+    model_serializer,
     model_validator,
 )
 
@@ -67,12 +68,17 @@ class RectShape(BaseModel):
         yy = [self.ymin, self.ymin, self.ymax, self.ymax, self.ymin]
         return Polygon(zip(xx, yy))
 
+    @model_serializer
+    def serialize(self):
+        return ",".join([str(i) for i in self.items])
+
 
 class CircleShape(BaseModel):
     """
     for circle shape gis data
     center : center of circle
     radius : radius of circle
+    TODO : CircleType을 serialize 할수 있도록 {x,y,r}
     """
 
     x: Optional[float] = Field(
@@ -92,6 +98,10 @@ class CircleShape(BaseModel):
         if self.x >= 180 or self.x <= -180:
             raise ValueError("longitude must be in range [-180, 180]")
         return self
+
+    # @model_serializer
+    # def serialize(self):
+    #     return {"x": self.x, "y": self.y, "radius": self.radius}
 
     ## 서큘러 import 이슈로 인해서 제외
     # @property
