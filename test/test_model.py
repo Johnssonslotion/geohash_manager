@@ -1,5 +1,6 @@
 import random
 from typing import Union, Dict, Tuple
+from pydantic import BaseModel, model_validator
 import pytest
 from geohash_manager import CircleShape, RectShape
 
@@ -104,3 +105,18 @@ def test_input_series_test(test_input, expected):
         assert ret.model_dump() == expected
     else:
         raise ValueError("test_input is invalid")
+
+
+class TestNestClass(BaseModel):
+    circle: CircleShape
+    rect: RectShape
+
+
+def test_input_nest_serialize_test():
+    center = (86, 86)
+    radius = 20000
+    rect_v = (86, 86, 86, 86)
+    clc = CircleShape(center=center, radius=radius)
+    rct = RectShape(bbox=rect_v)
+    nest = TestNestClass(circle=clc, rect=rct)
+    assert nest.rect == rct

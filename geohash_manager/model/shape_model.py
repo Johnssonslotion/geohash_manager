@@ -50,14 +50,24 @@ class RectShape(BaseModel):
         ## TODO : BBOX 로 입력받았을때 오류 있음
         if self.xmin.__class__.__name__ == "AliasChoices":
             return self
-        if self.ymin > 90 or self.ymin < -90:
-            self.xmin, self.ymin = self.ymin, self.xmin  ## swap
+        if self.ymin > 90 or self.ymin < -90:  ## x = lng이어야 하는데, lat으로 입력 받았을때,
+            lat = self.ymin
+            lng = self.xmin
+            self.xmin = lat
+            self.ymin = lng
+            ## swap
+            return self
         if self.ymax > 90 or self.ymax < -90:
-            self.xmax, self.ymax = self.ymax, self.xmax
+            lat = self.ymax
+            lng = self.xmax
+            self.xmax = lat
+            self.ymax = lng
+            return self
         if self.xmin > 180 or self.xmin < -180:
             raise ValueError("min lng must be in range [-180, 180]")
         if self.xmax > 180 or self.xmax < -180:
             raise ValueError("max lng must be in range [-180, 180]")
+        return self
 
     @property
     def items(self):
@@ -70,7 +80,7 @@ class RectShape(BaseModel):
         return Polygon(zip(xx, yy))
 
     @model_serializer
-    def serialize(self):
+    def serialize_model(self) -> str:
         return ",".join([str(i) for i in self.items])
 
     if TYPE_CHECKING:
@@ -117,15 +127,14 @@ class CircleShape(BaseModel):
             raise ValueError("longitude must be in range [-180, 180]")
         return self
 
-    # @model_serializer
-    # def serialize(self):
-    #     return {"x": self.x, "y": self.y, "radius": self.radius}
+    @model_serializer
+    def serialize(self):
+        return {"x": self.x, "y": self.y, "radius": self.radius}
 
     ## 서큘러 import 이슈로 인해서 제외
     # @property
     # def polygon(self):
     #     """
-
     #     ref : https://scitools.org.uk/cartopy/docs/latest/reference/generated/cartopy.geodesic.Geodesic.html
     #     """
     #     arr = GeoUtils.generate_samples_for_circle(
