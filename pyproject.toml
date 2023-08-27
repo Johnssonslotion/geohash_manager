@@ -3,7 +3,7 @@ name = "geohash_manager"
 version = "0.1.0"
 description = "very personally package for management geohash. rtree based."
 authors = ["John Park <johnpark@johnssonslab.info>"]
-readme = "README.md"
+readme = "readme.md"
 packages = [{include = "geohash_manager"}]
 
 [tool.poetry.dependencies]
