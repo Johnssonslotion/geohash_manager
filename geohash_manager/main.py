@@ -122,7 +122,7 @@ class GeohashManager(GeoUtils):
         threshold = kwargs.get("threshold", 0.5)
 
         if self.init_shape is None:
-            self.init_shape = self.bbox_rect(**kwargs)
+            self.init_shape = self.bbox_rect(**kwargs).polygon
         area_geohash_set = self.cover_geohash(
             target_polygon=self.init_shape, precision=self.precision
         )
