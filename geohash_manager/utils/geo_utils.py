@@ -226,15 +226,14 @@ class GeoUtils:
         x_count = (x_max_adj - x_min_adj) / (2 * x_err)
         y_count = (y_max_adj - y_min_adj) / (2 * y_err)
 
-        for i in range(int(x_count)):
-            for j in range(int(y_count)):
-                geohash_set.add(
-                    pgh.encode(
-                        y_min_adj + 2 * j * y_err,
-                        x_min_adj + 2 * i * x_err,
-                        precision=precision,
-                    )
+        for i in range(int(x_count) + 1):
+            for j in range(int(y_count) + 1):
+                geoh = pgh.encode(
+                    y_min_adj + 2 * j * y_err,
+                    x_min_adj + 2 * i * x_err,
+                    precision=precision,
                 )
+                geohash_set.add(geoh)
         ## remove geohash that is not in polygon
 
         for ii, geohash in enumerate(geohash_set.copy()):

@@ -128,6 +128,7 @@ class GeohashManager(GeoUtils):
         )
         div_candidate = deque()
         div_candidate.extend(area_geohash_set)
+        gh = None
         while len(div_candidate) > 0:
             i = div_candidate.pop()
             rect = self.geohash_rect(i)
@@ -146,4 +147,12 @@ class GeohashManager(GeoUtils):
                     # temp.append(i)
                 elif len(i) < self.limits:
                     div_candidate.extend(self.subhash(i, self.limits))
-        return self.ret
+            if ratio == 0:
+                gh = i
+        if len(self.ret) == 1:
+            ## 1개의 geohash만 반환되는 경우, 해당 geohash의 subhash를 반환
+            ret_geohash = self.subhash(gh, self.limits)
+            ret = [self.geohash_rect(i) for i in ret_geohash]
+            return ret
+        else:
+            return self.ret

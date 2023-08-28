@@ -18,9 +18,10 @@ def test_xyr_to_rects(manager, x, y, r, expected):
 
 def test_rect_to_rects(manager):
     rect = RectShape(
-        xmin=127.031767,
-        ymin=37.497175,
-        xmax=127.031767,
-        ymax=37.497175,
+        xmin=127.6171875,
+        ymin=34.62890625,
+        xmax=127.96875,
+        ymax=34.8046875,
     )
     ret = manager.rect_to_rects(bbox=rect.items)
+    print("temp")
