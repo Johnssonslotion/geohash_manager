@@ -23,5 +23,5 @@ def test_rect_to_rects(manager):
         xmax=127.96875,
         ymax=34.8046875,
     )
-    ret = manager.rect_to_rects(bbox=rect.items)
+    ret, geo_set = manager.rect_to_rects(bbox=rect.items)
     print("temp")

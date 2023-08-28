@@ -126,6 +126,7 @@ class GeohashManager(GeoUtils):
         area_geohash_set = self.cover_geohash(
             target_polygon=self.init_shape, precision=self.precision
         )
+        geohash_set = []
         div_candidate = deque()
         div_candidate.extend(area_geohash_set)
         gh = None
@@ -144,15 +145,17 @@ class GeohashManager(GeoUtils):
             if ratio != 1:
                 if ratio < threshold:
                     self.ret.append(rect)
+                    geohash_set.append(i)
                     # temp.append(i)
                 elif len(i) < self.limits:
                     div_candidate.extend(self.subhash(i, self.limits))
+
             if ratio == 0:
                 gh = i
         if len(self.ret) == 1:
             ## 1개의 geohash만 반환되는 경우, 해당 geohash의 subhash를 반환
             ret_geohash = self.subhash(gh, self.limits)
             ret = [self.geohash_rect(i) for i in ret_geohash]
-            return ret
+            return ret, ret_geohash
         else:
-            return self.ret
+            return self.ret, geohash_set
