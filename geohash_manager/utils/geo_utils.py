@@ -26,6 +26,14 @@ class GeoUtils:
     precision = 5
     latlng_switch = False  ## 기본값은 lng lat
 
+    _precision_size = {
+        3: (1.40625, 1.40625),
+        4: (0.17578125, 0.3515625),
+        5: (0.0439453125, 0.0439453125),
+        6: (0.0054931640625, 0.010986328125),
+        7: (0.001373291015625, 0.001373291015625),
+    }
+
     direction_info = {
         "top": {"n": 1, "e": 0},
         "bottom": {"n": -1, "e": 0},
@@ -346,3 +354,67 @@ class GeoUtils:
                 GeoUtils.compute_point_at_distance_and_bearing(x, y, radians, bearing)
             )
         return ret
+
+    @classmethod
+    def precision_size(cls, key):
+        """
+        geohash level 별 size를 반환한다.
+        crs 4326 기준으로 각 level 별 size는 다음과 같음
+        center기준으로 width,height
+        """
+        if key in cls._precision_size.keys():
+            return cls._precision_size[key]
+        else:
+            raise Exception("key is not valid")
+
+    @classmethod
+    def rect_geohash(cls, rect):
+        """
+        rect이 일반적인 geohash로 부터 나왔을 경우, 해당 geohash를 반환한다.
+        crs 4326 기준으로 각 level 별 size는 다음과 같음
+        3:=1.40625:1.40625
+        4:=0.17578125:0.3515625
+        5:=0.0439453125:0.0439453125
+        6:=0.0054931640625:0.010986328125
+        7:=0.001373291015625:0.001373291015625
+        """
+        if type(rect) == RectShape:
+            rect = rect
+        elif type(rect) == tuple:
+            cls.bbox_rect(bbox=rect)
+        else:
+            raise Exception("rect should be tuple or RectShape")
+
+        # sizecheck
+        # x_width,y_width가 2% 미만 차이날 경우 해당 경우로 판단
+        # x_center,y_center가 2% 미만 차이날 경우 해당 경우로 판단
+
+        x_width = rect.xmax - rect.xmin
+        y_width = rect.ymax - rect.ymin
+        x_center = (rect.xmax + rect.xmin) / 2
+        y_center = (rect.ymax + rect.ymin) / 2
+
+        check_x = []
+        check_y = []
+
+        for i in range(3, 8):
+            check_x.append(
+                abs(x_width - cls.precision_size(i)[0]) / cls.precision_size(i)[0]
+            )
+            check_y.append(
+                abs(y_width - cls.precision_size(i)[1]) / cls.precision_size(i)[1]
+            )
+
+        ## check_x,y가 둘다 5% 미만일 경우 해당 index가 geohash level
+        if min(check_x) < 0.05 and min(check_y) < 0.05:
+            precision = 3 + check_x.index(min(check_x))
+            ret = pgh.encode(y_center, x_center, precision=precision)
+            ret_decode = pgh.decode(ret)
+            if (ret_decode[0] - y_center) / y_center < 0.05 and (
+                ret_decode[1] - x_center
+            ) / x_center < 0.05:
+                return ret
+            else:
+                return None
+        else:
+            return None

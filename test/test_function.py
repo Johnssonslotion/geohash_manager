@@ -25,3 +25,22 @@ def test_rect_to_rects(manager):
     )
     ret, geo_set = manager.rect_to_rects(bbox=rect.items)
     print("temp")
+
+
+def test_rect_to_geohash(manager):
+    rect = RectShape(
+        xmin=127.6171875,
+        ymin=34.62890625,
+        xmax=127.96875,
+        ymax=34.8046875,
+    )
+    ret = manager.rect_to_geohash(bbox=rect.items)
+
+    print("temp")
+
+
+@pytest.mark.parametrize("geohash", ["wydbb"])
+def test_rect_geohash(manager, geohash):
+    ret = manager.geohash_rect(geohash)
+    ret_geohash = manager.rect_geohash(ret)
+    assert ret_geohash == geohash
