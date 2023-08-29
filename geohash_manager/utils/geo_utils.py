@@ -32,6 +32,7 @@ class GeoUtils:
         5: (0.0439453125, 0.0439453125),
         6: (0.010986328125, 0.0054931640625),
         7: (0.001373291015625, 0.001373291015625),
+        8: (0.00034332275390625, 0.000171661376953125),
     }
 
     direction_info = {
@@ -398,7 +399,7 @@ class GeoUtils:
         check_x = []
         check_y = []
 
-        for i in range(3, 8):
+        for i in range(3, 9):
             check_x.append(
                 abs(x_width - cls.precision_size(i)[0]) / cls.precision_size(i)[0]
             )
@@ -417,6 +418,9 @@ class GeoUtils:
             ):
                 return ret
             else:
+                logging.error(
+                    f"rect_geohash error : {rect}, {ret}, {ret_decode}, {y_center}, {x_center}"
+                )
                 return None
         else:
             return None

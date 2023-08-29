@@ -57,3 +57,18 @@ def test_rect_geohash(manager, geohash):
     print(x, y)
     ret = manager.rect_geohash(error_case_1)
     assert ret is not None, f"error case : {ret}"
+    error_case_2 = RectShape(
+        xmax=127.75039672851562,
+        xmin=127.75005340576172,
+        ymax=34.737396240234375,
+        ymin=34.73722457885742,
+    )
+    ret = manager.rect_geohash(error_case_2)
+    assert ret is not None, f"error case : {ret}"
+
+
+def test_gen_geohash():
+    import pygeohash as pgh
+
+    ret = pgh.decode_exactly("wydbbxxx")
+    print(ret[2] * 2, ret[3] * 2)
