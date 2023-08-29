@@ -410,9 +410,10 @@ class GeoUtils:
             precision = 3 + check_x.index(min(check_x))
             ret = pgh.encode(y_center, x_center, precision=precision)
             ret_decode = pgh.decode(ret)
-            if (ret_decode[0] - y_center) / y_center < 0.05 and (
-                ret_decode[1] - x_center
-            ) / x_center < 0.05:
+            if (
+                abs((ret_decode[0] - y_center) / y_center) < 0.05
+                and abs((ret_decode[1] - x_center) / x_center) < 0.05
+            ):
                 return ret
             else:
                 return None
