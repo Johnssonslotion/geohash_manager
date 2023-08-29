@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "geohash_manager"
-version = "0.1.0"
+version = "0.2.0"
 description = "very personally package for management geohash. rtree based."
 authors = ["John Park <johnpark@johnssonslab.info>"]
 readme = "readme.md"
