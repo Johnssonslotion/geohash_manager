@@ -48,4 +48,12 @@ def test_rect_geohash(manager, geohash):
         xmax=127.96875, xmin=127.9248046875, ymax=34.8046875, ymin=34.7607421875
     )
     ret = manager.rect_geohash(error_case)
-    assert ret is not None, "error case"
+    assert ret is not None, f"error case : {ret}"
+    error_case_1 = RectShape(
+        xmax=127.96875, xmin=127.6171875, ymax=34.8046875, ymin=34.62890625
+    )
+    y = error_case_1.ymax - error_case_1.ymin
+    x = error_case_1.xmax - error_case_1.xmin
+    print(x, y)
+    ret = manager.rect_geohash(error_case_1)
+    assert ret is not None, f"error case : {ret}"
