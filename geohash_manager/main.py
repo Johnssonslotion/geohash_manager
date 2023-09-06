@@ -35,7 +35,6 @@ class GeohashManager(GeoUtils):
         if self.position is not None:
             self.tracert.append(self.position)
         self.mode = kwargs.get("mode", "tracker")
-
         ## logger
         self.logger_name = kwargs.get("logger", "geohash_manager")
         self.logger = logging.getLogger(self.logger_name)
@@ -62,8 +61,92 @@ class GeohashManager(GeoUtils):
         반환합니다.
         가까울수록 높은 우선순위를 가집니다.
         """
-        ret = []
-        return ret
+        position = kwargs.get("position", None)
+        precision = kwargs.get("precision", None)
+        if precision is None:
+            precision = self.precision
+        if position is not None:
+            geohash = pgh.encode(
+                latitude=position[1],
+                longitude=position[0],
+                precision=precision,
+            )
+            lat, lon, lat_err, lon_err = pgh.decode_exactly(geohash)
+            if lat > position[1]:
+                if lon > position[0]:
+                    bias = "topright"
+                elif lon < position[0]:
+                    bias = "topleft"
+                else:
+                    bias = "top"
+            elif lat < position[1]:
+                if lon > position[0]:
+                    bias = "bottomright"
+                elif lon < position[0]:
+                    bias = "bottomleft"
+                else:
+                    bias = "bottom"
+            else:
+                bias = "all"
+
+            # bbox = [lon - lon_err, lat - lat_err, lon + lon_err, lat + lat_err]
+
+        else:
+            geohash = kwargs.get("geohash", None)
+            bias = kwargs.get("bias", None)
+            assert geohash is not None, "geohash or position must be not None"
+
+        if bias == "topright":
+            num_rotate = 1
+        elif bias == "right":
+            num_rotate = 2
+        elif bias == "bottomright":
+            num_rotate = 3
+        elif bias == "bottom":
+            num_rotate = 4
+        elif bias == "bottomleft":
+            num_rotate = 5
+        elif bias == "left":
+            num_rotate = 6
+        elif bias == "topleft":
+            num_rotate = 7
+        else:
+            num_rotate = 0
+
+        def rotate(lst, k):
+            k = k % len(lst)
+            lst = lst[k:] + lst[:k]
+            return lst
+
+        # if direction == "all":
+        ## 시계방향임에 따라, 시작지점을 조정함
+        directions = [
+            "top",
+            "topright",
+            "right",
+            "bottomright",
+            "bottom",
+            "bottomleft",
+            "left",
+            "topleft",
+        ]
+
+        lat, lng, lat_err, lng_err = pgh.decode_exactly(geohash)
+        bbox = [
+            lng - 1.5 * lng_err,
+            lat - 1.5 * lat_err,
+            lng + 1.5 * lat_err,
+            lat + 1.5 * lat_err,
+        ]
+
+        neighbor_geohashes = []
+        directions = rotate(directions, num_rotate)
+        for direction in directions:
+            neighbor_geohashes.append(
+                self.neighber(geohash=geohash, precision=precision, direction=direction)
+            )
+
+        return neighbor_geohashes, bbox
 
     def neighber(self, **kwargs):
         ## 현재 상황에 따라 인접한 geohash를 반환합니다.

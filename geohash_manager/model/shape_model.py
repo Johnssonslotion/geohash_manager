@@ -74,6 +74,10 @@ class RectShape(BaseModel):
         return (self.xmin, self.ymin, self.xmax, self.ymax)
 
     @property
+    def bbox(self):
+        return (self.xmin, self.ymin, self.xmax, self.ymax)
+
+    @property
     def polygon(self):
         xx = [self.xmin, self.xmax, self.xmax, self.xmin, self.xmin]
         yy = [self.ymin, self.ymin, self.ymax, self.ymax, self.ymin]

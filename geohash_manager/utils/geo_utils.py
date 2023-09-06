@@ -170,15 +170,16 @@ class GeoUtils:
         이웃하는 문자열의 방향을 지정함으로써, 인접한 hash를 반환한다.
         입력한 위치를 latlng을 통해서 받을 경우, 해당 위치를 기준으로 경계가 가장 가까운 hash를 반환한다.
         """
+
         if "precision" in kwargs.keys():
             precision = kwargs["precision"]
         else:
             precision = cls.precision
         if "geohash" in kwargs.keys():
             geohash = kwargs["geohash"]
-        elif "latlng" in kwargs.keys():
-            latlng = kwargs["latlng"]
-            geohash = pgh.encode(latlng[0], latlng[1], precision=precision)
+        elif "position" in kwargs.keys():
+            position = kwargs.get("position", None)  ## lng, lat
+            geohash = pgh.encode(position[1], position[0], precision=precision)
         if "direction" in kwargs.keys():
             direction = kwargs["direction"]
         else:
@@ -369,7 +370,7 @@ class GeoUtils:
             raise Exception("key is not valid")
 
     @classmethod
-    def rect_geohash(cls, rect):
+    def rect_geohash(cls, rect, bias=None):
         """
         rect이 일반적인 geohash로 부터 나왔을 경우, 해당 geohash를 반환한다.
         crs 4326 기준으로 각 level 별 size는 다음과 같음

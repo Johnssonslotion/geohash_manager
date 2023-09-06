@@ -64,7 +64,15 @@ def test_rect_geohash(manager, geohash):
         ymin=34.73722457885742,
     )
     ret = manager.rect_geohash(error_case_2)
-    assert ret is not None, f"error case : {ret}"
+    assert ret is not None, f"error case : {ret}"  ## fixed, extend geohash_length 7->8
+    error_case_3 = RectShape(
+        xmin=127.9248046875,
+        ymin=34.7607421875,
+        xmax=127.96875,
+        ymax=34.8046875,
+    )
+    ret = manager.rect_geohash(error_case_3)
+    assert ret is not None, f"error case : {ret}"  ## fixed, extend geohash_length 7->8
 
 
 def test_gen_geohash():
@@ -72,3 +80,10 @@ def test_gen_geohash():
 
     ret = pgh.decode_exactly("wydbbxxx")
     print(ret[2] * 2, ret[3] * 2)
+
+
+def test_position_neighbor(manager: GeohashManager):
+    curent_position = (127.96875, 34.8046875)
+    neighbor_geohash, bbox = manager.neighbors(position=curent_position)
+    assert len(neighbor_geohash) == 8, f"neighbor_geohash : {neighbor_geohash}"
+    assert len(bbox) == 1, f"bbox : {bbox}"
