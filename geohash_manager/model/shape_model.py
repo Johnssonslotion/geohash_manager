@@ -56,7 +56,14 @@ class RectShape(BaseModel):
             self.xmin = lat
             self.ymin = lng
             ## swap
-            return self
+            if self.ymax > 90 or self.ymax < -90:
+                lat = self.ymax
+                lng = self.xmax
+                self.xmax = lat
+                self.ymax = lng
+                return self
+            else:
+                return self
         if self.ymax > 90 or self.ymax < -90:
             lat = self.ymax
             lng = self.xmax
@@ -145,3 +152,40 @@ class CircleShape(BaseModel):
     #         x=self.x, y=self.y, radius=self.radius, samples=100
     #     )
     #     return Polygon(arr)
+
+
+class GeohashObject(BaseModel):
+    """
+    geohash object
+    """
+
+    geohash: str = Field(description="geohash string")
+    rect: RectShape = Field(description="geohash bounding box")
+
+    @property
+    def geohash(self):
+        return self.geohash
+
+    @property
+    def bbox(self):
+        return self.rect.items
+
+    @property
+    def polygon(self):
+        return self.rect.polygon
+
+    @property
+    def center(self):
+        return self.rect.polygon.centroid.coords[0]
+
+    @model_serializer
+    def serialize(self):
+        return {
+            "geohash": self.geohash,
+            "bbox": self.bbox,
+        }
+
+
+class Geohashes(BaseModel):
+    geohashes: List[GeohashObject] = Field(description="geohash list")
+    order: List[str] = Field(description="order of geohash list")

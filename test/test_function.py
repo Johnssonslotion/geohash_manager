@@ -27,16 +27,15 @@ def test_rect_to_rects(manager):
     print("temp")
 
 
-def test_rect_to_geohash(manager):
+def test_rect_to_geohash(manager: GeohashManager):
     rect = RectShape(
         xmin=127.6171875,
         ymin=34.62890625,
         xmax=127.96875,
         ymax=34.8046875,
     )
-    ret = manager.rect_to_geohash(bbox=rect.items)
-
-    print("temp")
+    ret = manager.rect_geohash(rect=rect)
+    assert ret is not None, f"error case : {ret}"
 
 
 @pytest.mark.parametrize("geohash", ["wydbb"])
@@ -82,8 +81,29 @@ def test_gen_geohash():
     print(ret[2] * 2, ret[3] * 2)
 
 
+def test_position_geohashObject(manager: GeohashManager):
+    position = (127.056146, 37.505308)
+    precision = 6
+    position, geohash_obj, bias = manager.position_geohashobj(
+        position=position, precision=precision
+    )
+    assert geohash_obj.geohash == "wydm75"
+    assert bias == "bottomleft"
+
+
 def test_position_neighbor(manager: GeohashManager):
     curent_position = (127.96875, 34.8046875)
-    neighbor_geohash, bbox = manager.neighbors(position=curent_position)
-    assert len(neighbor_geohash) == 8, f"neighbor_geohash : {neighbor_geohash}"
-    assert len(bbox) == 1, f"bbox : {bbox}"
+    precision = 6
+    geohash_obj = manager.neighbor(position=curent_position, precision=precision)
+    assert len(geohash_obj.geohash) == 6, f"neighbor_geohash : {geohash_obj.geohash}"
+    assert len(geohash_obj.bbox) == 4, f"bbox : {geohash_obj.bbox}"
+
+
+def test_position_neighbors(manager: GeohashManager):
+    curent_position = (127.96875, 34.8046875)
+    precision = 6
+    ## neighbors : input position or geohash, precision nullable direction
+    geohashes = manager.neighbors(position=curent_position, precision=precision)
+
+    # assert len(geohash_obj.geohash) == 6, f"neighbor_geohash : {geohash_obj.geohash}"
+    # assert len(geohash_obj.bbox) == 4, f"bbox : {geohash_obj.bbox}"
