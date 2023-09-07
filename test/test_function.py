@@ -10,9 +10,11 @@ def manager():
 ## information
 
 
-@pytest.mark.parametrize("x,y,r,expected", [(127.031767, 37, 20000, 63)])
-def test_xyr_to_rects(manager, x, y, r, expected):
+@pytest.mark.parametrize("x,y,r,expected", [(127.031767, 37, 20000, 140)])
+def test_xyr_to_rects(manager: GeohashManager, x, y, r, expected):
     ret = manager.xyr_to_rects(x=x, y=y, r=r)
+    ##duplicated_check
+    result = [manager.rect_geohash(i) for i in ret]
     assert len(ret) == expected
 
 
@@ -104,6 +106,8 @@ def test_position_neighbors(manager: GeohashManager):
     precision = 6
     ## neighbors : input position or geohash, precision nullable direction
     geohashes = manager.neighbors(position=curent_position, precision=precision)
+    assert len(geohashes.geohashes) == 8, f"neighbor_geohash : {geohashes.geohashes}"
+    assert len(geohashes.order) == 8, f"order : {geohashes.order}"
 
     # assert len(geohash_obj.geohash) == 6, f"neighbor_geohash : {geohash_obj.geohash}"
     # assert len(geohash_obj.bbox) == 4, f"bbox : {geohash_obj.bbox}"

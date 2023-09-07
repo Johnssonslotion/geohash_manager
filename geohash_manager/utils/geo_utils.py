@@ -7,7 +7,7 @@ from typing import Union
 import pygeohash as pgh
 from shapely.geometry import Polygon, Point, MultiPolygon
 
-from geohash_manager.model.shape_model import CircleShape, RectShape
+from geohash_manager.model.shape_model import CircleShape, GeohashObject, RectShape
 from tqdm import tqdm
 import logging
 
@@ -185,6 +185,8 @@ class GeoUtils:
         else:
             direction = "all"
 
+        if type(geohash) == GeohashObject:
+            geohash = geohash.geohash
         lat, lon, lat_err, lon_err = pgh.decode_exactly(geohash)
         lat_err *= 2
         lon_err *= 2
@@ -199,7 +201,10 @@ class GeoUtils:
 
         neighbor_geohash = pgh.encode(neighbor_lat, neighbor_lon, precision=precision)
         # 결과를 반환합니다.
-        return neighbor_geohash
+        geohash_obj = GeohashObject(
+            geohash=neighbor_geohash, rect=cls.geohash_rect(neighbor_geohash)
+        )
+        return geohash_obj
 
     @classmethod
     def cover_geohash(cls, target_polygon: Union[Polygon, MultiPolygon], precision):
@@ -425,3 +430,61 @@ class GeoUtils:
                 return None
         else:
             return None
+
+    @classmethod
+    def position_geohashobj(cls, position, geohash=None, precision=None):
+        """
+        input: geohash[geohash object or str] or position
+        output : position, geohash_obj, bias
+        """
+        if precision is None:
+            precision = cls.precision
+        assert position is not None, "geohash or position must be not None"
+
+        if geohash is None:
+            ## geohash obj generate
+            geohash = pgh.encode(
+                latitude=position[1],
+                longitude=position[0],
+                precision=precision,
+            )
+            geohash_obj = GeohashObject(
+                geohash=geohash,
+                rect=cls.geohash_rect(geohash),
+            )
+        elif type(geohash) == str:
+            geohash_obj = GeohashObject(
+                geohash=geohash,
+                rect=cls.geohash_rect(geohash),
+            )
+        elif type(geohash) == GeohashObject:
+            pass
+        else:
+            raise Exception("geohash is not str or GeohashObject")
+        bias = cls.position_bias(position, geohash_obj)
+        return position, geohash_obj, bias
+
+    @classmethod
+    def position_bias(cls, position, geohash_obj):
+        """
+        input : position, geohash_obj
+        output : bias
+        """
+        center = geohash_obj.center
+        if center[1] > position[1]:
+            if center[0] > position[0]:
+                bias = "topright"
+            elif center[0] < position[0]:
+                bias = "topleft"
+            else:
+                bias = "top"
+        elif center[1] < position[1]:
+            if center[0] > position[0]:
+                bias = "bottomright"
+            elif center[0] < position[0]:
+                bias = "bottomleft"
+            else:
+                bias = "bottom"
+        else:
+            bias = "all"
+        return bias

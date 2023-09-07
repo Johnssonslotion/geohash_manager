@@ -4,7 +4,7 @@ import pygeohash as pgh
 import numpy as np
 import rtree as rt
 from typing import Optional, List, Tuple, Union
-from geohash_manager.model.shape_model import CircleShape
+from geohash_manager.model.shape_model import CircleShape, Geohashes, GeohashObject
 from geohash_manager.utils.geo_utils import GeoUtils
 from shapely.geometry import Polygon, Point, LineString, LinearRing
 
@@ -60,41 +60,25 @@ class GeohashManager(GeoUtils):
         class 변수에 의해 정의된 neighbor 함수를 기초로, 현재 위치를 기준으로 인접한 geohash를
         반환합니다.
         가까울수록 높은 우선순위를 가집니다.
+        return :
+        dict
+        - geohashes : geohash obj[geohash,bbox]
         """
+        ret = {"geohashes": [], "order": []}
         position = kwargs.get("position", None)
         precision = kwargs.get("precision", None)
         if precision is None:
             precision = self.precision
         if position is not None:
-            geohash = pgh.encode(
-                latitude=position[1],
-                longitude=position[0],
-                precision=precision,
+            position, geohash, bias = self.position_geohashobj(
+                position=position, precision=precision
             )
-            lat, lon, lat_err, lon_err = pgh.decode_exactly(geohash)
-            if lat > position[1]:
-                if lon > position[0]:
-                    bias = "topright"
-                elif lon < position[0]:
-                    bias = "topleft"
-                else:
-                    bias = "top"
-            elif lat < position[1]:
-                if lon > position[0]:
-                    bias = "bottomright"
-                elif lon < position[0]:
-                    bias = "bottomleft"
-                else:
-                    bias = "bottom"
-            else:
-                bias = "all"
-
-            # bbox = [lon - lon_err, lat - lat_err, lon + lon_err, lat + lat_err]
-
         else:
             geohash = kwargs.get("geohash", None)
             bias = kwargs.get("bias", None)
             assert geohash is not None, "geohash or position must be not None"
+
+        assert type(geohash) == GeohashObject
 
         if bias == "topright":
             num_rotate = 1
@@ -131,22 +115,14 @@ class GeohashManager(GeoUtils):
             "topleft",
         ]
 
-        lat, lng, lat_err, lng_err = pgh.decode_exactly(geohash)
-        bbox = [
-            lng - 1.5 * lng_err,
-            lat - 1.5 * lat_err,
-            lng + 1.5 * lat_err,
-            lat + 1.5 * lat_err,
-        ]
-
-        neighbor_geohashes = []
+        # neighbor_geohashes = []
         directions = rotate(directions, num_rotate)
         for direction in directions:
-            neighbor_geohashes.append(
+            ret["order"].append(direction)
+            ret["geohashes"].append(
                 self.neighber(geohash=geohash, precision=precision, direction=direction)
             )
-
-        return neighbor_geohashes, bbox
+        return Geohashes(**ret)
 
     def neighber(self, **kwargs):
         ## 현재 상황에 따라 인접한 geohash를 반환합니다.
@@ -161,7 +137,7 @@ class GeohashManager(GeoUtils):
         3. geohash를 기준으로 Rect을 받고, Rect의 polygon을 반환
         4. cover하는 영역을 확인하고, 해당 영역에 해당하는 geohash를 반환
 
-        # 겹치는 영역이 5퍼 미만이면 제외
+        # 겹치는 영역이 5퍼     미만이면 제외
         """
         threshold = kwargs.get("threshold", 0.5)
 
