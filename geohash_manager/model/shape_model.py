@@ -189,3 +189,4 @@ class GeohashObject(BaseModel):
 class Geohashes(BaseModel):
     geohashes: List[GeohashObject] = Field(description="geohash list")
     order: List[str] = Field(description="order of geohash list")
+    outer_rect: RectShape = Field(description="outer bbox of geohash list")

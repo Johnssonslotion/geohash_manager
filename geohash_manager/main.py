@@ -4,7 +4,12 @@ import pygeohash as pgh
 import numpy as np
 import rtree as rt
 from typing import Optional, List, Tuple, Union
-from geohash_manager.model.shape_model import CircleShape, Geohashes, GeohashObject
+from geohash_manager.model.shape_model import (
+    CircleShape,
+    Geohashes,
+    GeohashObject,
+    RectShape,
+)
 from geohash_manager.utils.geo_utils import GeoUtils
 from shapely.geometry import Polygon, Point, LineString, LinearRing
 
@@ -79,7 +84,18 @@ class GeohashManager(GeoUtils):
             assert geohash is not None, "geohash or position must be not None"
 
         assert type(geohash) == GeohashObject
-
+        center_rect = geohash.bbox
+        ## outer rect generation
+        x_diff = geohash.bbox[2] - geohash.bbox[0]
+        y_diff = geohash.bbox[2] - geohash.bbox[0]
+        outer_bbox = (
+            center_rect[0] - 1.5 * x_diff,
+            center_rect[1] - 1.5 * y_diff,
+            center_rect[2] + 1.5 * x_diff,
+            center_rect[3] + 1.5 * y_diff,
+        )
+        outer_rect = RectShape(bbox=outer_bbox)
+        ret["outer_rect"] = outer_rect
         if bias == "topright":
             num_rotate = 1
         elif bias == "right":
