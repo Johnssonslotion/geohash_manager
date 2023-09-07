@@ -82,12 +82,12 @@ class GeohashManager(GeoUtils):
             geohash = kwargs.get("geohash", None)
             bias = kwargs.get("bias", None)
             assert geohash is not None, "geohash or position must be not None"
-
             if type(geohash) == str:
                 ### str to obj
                 geohash = GeohashObject(
                     geohash=geohash, rect=self.geohash_rect(geohash)
                 )
+                precision = len(geohash.geohash)
             elif type(geohash) == GeohashObject:
                 pass
             else:
@@ -151,8 +151,12 @@ class GeohashManager(GeoUtils):
 
     def neighber(self, **kwargs):
         ## 현재 상황에 따라 인접한 geohash를 반환합니다.
-        kwargs["position"] = self.position
-        kwargs["precision"] = self.precision
+        position = kwargs.get("position", None)
+        if position is None:
+            kwargs["position"] = self.position
+        precision = kwargs.get("precision", None)
+        if precision is None:
+            kwargs["precision"] = self.precision
         return super().neighbor(**kwargs)
 
     def xyr_to_rects(self, **kwargs):

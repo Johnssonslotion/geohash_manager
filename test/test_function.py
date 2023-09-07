@@ -117,8 +117,13 @@ def test_position_neighbors(manager: GeohashManager, input_param, output_param):
         assert len(geohashes.order) == 8, f"order : {geohashes.order}"
         assert type(geohashes.outer_rect) == RectShape, "outer type check"
     elif "geohash" in input_param.keys():
-        geohash = input_param
+        geohash = input_param["geohash"]
         precision = 6
         geohashes = manager.neighbors(geohash=geohash, precision=precision)
+        ## precision ignore, geohash length overrided
+        assert len(geohashes.geohashes[0].geohash) == len(
+            input_param["geohash"]
+        ), f"geohash : {geohashes}"
+
     else:
         raise ValueError("input_param must be current_position or geohash")
