@@ -95,14 +95,16 @@ class GeohashManager(GeoUtils):
         assert type(geohash) == GeohashObject
         ret["geohash"] = geohash
         center_rect = geohash.bbox
+        center = geohash.center
         ## outer rect generation
         x_diff = geohash.bbox[2] - geohash.bbox[0]
-        y_diff = geohash.bbox[2] - geohash.bbox[0]
+        y_diff = geohash.bbox[3] - geohash.bbox[1]
+
         outer_bbox = (
-            center_rect[0] - 1.5 * x_diff,
-            center_rect[1] - 1.5 * y_diff,
-            center_rect[2] + 1.5 * x_diff,
-            center_rect[3] + 1.5 * y_diff,
+            center[0] - 1.5 * x_diff,
+            center[1] - 1.5 * y_diff,
+            center[0] + 1.5 * x_diff,
+            center[1] + 1.5 * y_diff,
         )
         outer_rect = RectShape(bbox=outer_bbox)
         ret["outer_rect"] = outer_rect

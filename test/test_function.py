@@ -1,11 +1,12 @@
 import pytest
 from geohash_manager import RectShape, GeohashManager
 from geohash_manager.model.shape_model import GeohashObject
+import time
+import pygeohash as pgh
 
-
-@pytest.fixture(scope="session")
-def manager():
-    return GeohashManager()
+# @pytest.fixture(scope="session")
+# def manager():
+#     return GeohashManager()
 
 
 ## information
@@ -153,3 +154,100 @@ def test_position_neighbors(manager: GeohashManager, input_param, output_param):
 
     else:
         raise ValueError("input_param must be current_position or geohash")
+
+
+def test_search_neighborhood(util_latlng):
+    target = util_latlng
+    prec = 6
+    ## time check
+    start_time = time.time()
+    manager = GeohashManager()
+    geohash_neighbor = manager.neighbor(
+        position=(target["lng"], target["lat"]), precision=prec
+    )
+    # geohash, bbox, _ =latlng_rect(target["lat"], target["lng"],precision=prec)
+    hashing_time = time.time() - start_time
+    print(
+        f"\nhashing time: {hashing_time:4f}s",
+    )
+
+    assert geohash_neighbor.geohash_str is not None
+    assert geohash_neighbor.bbox is not None
+    ret = manager.neighbors(
+        geohash=geohash_neighbor.geohash_str, precision=prec, direction="all"
+    )
+
+    searching_time = time.time() - start_time
+    print(f"searching time: {searching_time:4f}s")
+    ## size_check & length_check
+    assert len(ret.neighbers) == 8
+
+    ## edge check
+    bbox = ret.geohash.bbox  ## center area bbox
+    single_top = manager.geohash_rect(ret.neighbers[0].geohash_str)
+    single_bottom = manager.geohash_rect(ret.neighbers[4].geohash_str)
+    single_left = manager.geohash_rect(ret.neighbers[6].geohash_str)
+    single_right = manager.geohash_rect(ret.neighbers[2].geohash_str)
+    single_top_left = manager.geohash_rect(ret.neighbers[-1].geohash_str)
+    single_top_right = manager.geohash_rect(ret.neighbers[1].geohash_str)
+    single_bottom_left = manager.geohash_rect(ret.neighbers[5].geohash_str)
+    single_bottom_right = manager.geohash_rect(ret.neighbers[3].geohash_str)
+
+    center_topright = (bbox[2], bbox[3])
+    center_bottomleft = (bbox[0], bbox[1])
+
+    single_top_bottomright = (single_top.xmax, single_top.ymin)
+    single_top_right_bottomleft = (single_top_right.xmin, single_top_right.ymin)
+    single_right = (single_right.xmin, single_right.ymax)
+
+    ## center_topright shared point : single_top[bottomright], single_top_right[bottomleft], single_right[topleft]
+    assert (
+        center_topright == single_top_bottomright
+    ), "center_topright==single_top_bottomright"
+    assert (
+        center_topright == single_top_right_bottomleft
+    ), "center_topright==single_top_right_bottomleft"
+    assert center_topright == single_right, "center_topright==single_right"
+
+    ## center_bottomleft shared point : single_bottom[topleft], single_bottom_left[topright], single_left[bottomright]
+    single_bottom_topleft = (single_bottom.xmin, single_bottom.ymax)
+    single_bottom_left_topright = (single_bottom_left.xmax, single_bottom_left.ymax)
+    single_left_bottomright = (single_left.xmax, single_left.ymin)
+
+    assert (
+        center_bottomleft == single_bottom_topleft
+    ), "center_bottomleft==single_bottom_topright"
+    assert (
+        center_bottomleft == single_bottom_left_topright
+    ), "center_bottomleft==single_bottom_left_bottomright"
+    assert (
+        center_bottomleft == single_left_bottomright
+    ), "center_bottomleft==single_left_bottomright"
+
+    ## outer_topright shared point, single_top_right[topright]
+    ## outer_bottomleft shared point, single_bottom_left[bottomleft]
+
+    bbox_outer = ret.outer_rect.bbox
+    outer_topright = (bbox_outer[2], bbox_outer[3])
+    outer_bottomleft = (bbox_outer[0], bbox_outer[1])
+
+    single_top_right_topright = (single_top_right.xmax, single_top_right.ymax)
+    single_bottom_left_bottomleft = (single_bottom_left.xmin, single_bottom_left.ymin)
+
+    assert (
+        outer_topright == single_top_right_topright
+    ), "outer_topright==single_top_right_topright"
+    assert (
+        outer_bottomleft == single_bottom_left_bottomleft
+    ), "outer_bottomleft==single_bottom_left_bottomleft"
+
+
+def test_decode_range():
+    lat, lng, lat_err, lng_err = pgh.decode_exactly("wydbb")
+
+    bias_point = (lat + lat_err * 1.1, lng + lng_err * 1.1)
+    bias_geohash = pgh.encode(bias_point[0], bias_point[1], precision=5)
+    assert bias_geohash != "wydbb"
+    bias_point = (lat + lat_err * 0.9, lng + lng_err * 0.9)
+    bias_geohash = pgh.encode(bias_point[0], bias_point[1], precision=5)
+    assert bias_geohash == "wydbb"
