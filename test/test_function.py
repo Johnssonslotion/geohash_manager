@@ -108,6 +108,7 @@ def test_position_neighbors(manager: GeohashManager):
     geohashes = manager.neighbors(position=curent_position, precision=precision)
     assert len(geohashes.geohashes) == 8, f"neighbor_geohash : {geohashes.geohashes}"
     assert len(geohashes.order) == 8, f"order : {geohashes.order}"
+    assert type(geohashes.outer_rect) == RectShape, "outer type check"
 
     # assert len(geohash_obj.geohash) == 6, f"neighbor_geohash : {geohash_obj.geohash}"
     # assert len(geohash_obj.bbox) == 4, f"bbox : {geohash_obj.bbox}"
