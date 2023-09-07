@@ -186,8 +186,14 @@ class GeoUtils:
             direction = "all"
 
         if type(geohash) == GeohashObject:
-            geohash = geohash.geohash
-        lat, lon, lat_err, lon_err = pgh.decode_exactly(geohash)
+            geohash_str = geohash.geohash_str
+            ## override precision
+            precision = len(geohash_str)
+        else:
+            geohash_str = geohash
+            ## override precision
+            precision = len(geohash_str)
+        lat, lon, lat_err, lon_err = pgh.decode_exactly(geohash_str)
         lat_err *= 2
         lon_err *= 2
 
@@ -199,10 +205,13 @@ class GeoUtils:
 
         # 이웃하는 문자열의 Geohash 문자열을 생성합니다.
 
-        neighbor_geohash = pgh.encode(neighbor_lat, neighbor_lon, precision=precision)
+        neighbor_geohash_str = pgh.encode(
+            neighbor_lat, neighbor_lon, precision=precision
+        )
         # 결과를 반환합니다.
         geohash_obj = GeohashObject(
-            geohash=neighbor_geohash, rect=cls.geohash_rect(neighbor_geohash)
+            geohash_str=neighbor_geohash_str,
+            rect=cls.geohash_rect(neighbor_geohash_str),
         )
         return geohash_obj
 
@@ -449,12 +458,12 @@ class GeoUtils:
                 precision=precision,
             )
             geohash_obj = GeohashObject(
-                geohash=geohash,
+                geohash_str=geohash,
                 rect=cls.geohash_rect(geohash),
             )
         elif type(geohash) == str:
             geohash_obj = GeohashObject(
-                geohash=geohash,
+                geohash_str=geohash,
                 rect=cls.geohash_rect(geohash),
             )
         elif type(geohash) == GeohashObject:

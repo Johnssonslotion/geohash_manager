@@ -1,5 +1,6 @@
 import pytest
 from geohash_manager import RectShape, GeohashManager
+from geohash_manager.model.shape_model import GeohashObject
 
 
 @pytest.fixture(scope="session")
@@ -89,7 +90,7 @@ def test_position_geohashObject(manager: GeohashManager):
     position, geohash_obj, bias = manager.position_geohashobj(
         position=position, precision=precision
     )
-    assert geohash_obj.geohash == "wydm75"
+    assert geohash_obj.geohash_str == "wydm75"
     assert bias == "bottomleft"
 
 
@@ -97,7 +98,9 @@ def test_position_neighbor(manager: GeohashManager):
     curent_position = (127.96875, 34.8046875)
     precision = 6
     geohash_obj = manager.neighbor(position=curent_position, precision=precision)
-    assert len(geohash_obj.geohash) == 6, f"neighbor_geohash : {geohash_obj.geohash}"
+    assert (
+        len(geohash_obj.geohash_str) == 6
+    ), f"neighbor_geohash : {geohash_obj.geohash}"
     assert len(geohash_obj.bbox) == 4, f"bbox : {geohash_obj.bbox}"
 
 
@@ -110,20 +113,43 @@ def test_position_neighbors(manager: GeohashManager, input_param, output_param):
         curent_position = input_param["position"]
         precision = 6
         ## neighbors : input position or geohash, precision nullable direction
+        position, geohash_obj, bias = manager.position_geohashobj(
+            position=curent_position, precision=precision
+        )
         geohashes = manager.neighbors(position=curent_position, precision=precision)
+
         assert (
-            len(geohashes.geohashes) == 8
-        ), f"neighbor_geohash : {geohashes.geohashes}"
+            len(geohashes.neighbers) == 8
+        ), f"neighbor_geohash : {geohashes.neighbers}"
         assert len(geohashes.order) == 8, f"order : {geohashes.order}"
+        assert (
+            geohashes.geohash.geohash_str == geohash_obj.geohash_str
+        ), f"geohash : {geohashes.geohash}"
+        # geohash_string_trim = geohash_obj.geohash_str[: precision - 1]
+        # for i in geohashes.neighbers:
+        #     assert type(i) == GeohashObject, "neighbers type check"
+        #     assert (
+        #         i.geohash_str[: precision - 1] == geohash_string_trim
+        #     ), "geohash trim check"
         assert type(geohashes.outer_rect) == RectShape, "outer type check"
     elif "geohash" in input_param.keys():
         geohash = input_param["geohash"]
         precision = 6
+        geohash_string_trim = geohash[: len(geohash) - 1]
         geohashes = manager.neighbors(geohash=geohash, precision=precision)
         ## precision ignore, geohash length overrided
-        assert len(geohashes.geohashes[0].geohash) == len(
+        assert (
+            geohashes.geohash.geohash_str == geohash
+        ), f"geohash : {geohashes.geohash}"
+        assert len(geohashes.neighbers[0].geohash_str) == len(
             input_param["geohash"]
         ), f"geohash : {geohashes}"
+        # for i in geohashes.neighbers:
+        #     assert type(i) == GeohashObject, "neighbers type check"
+        #     assert (
+        #         i.geohash_str[: precision - 1] == geohash_string_trim
+        #     ), "geohash trim check"
+        assert type(geohashes.outer_rect) == RectShape, "outer type check"
 
     else:
         raise ValueError("input_param must be current_position or geohash")

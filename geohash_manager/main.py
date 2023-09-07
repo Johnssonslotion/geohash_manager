@@ -69,7 +69,7 @@ class GeohashManager(GeoUtils):
         dict
         - geohashes : geohash obj[geohash,bbox]
         """
-        ret = {"geohashes": [], "order": []}
+        ret = {"neighbers": [], "order": [], "outer_rect": None, "geohash": None}
         position = kwargs.get("position", None)
         precision = kwargs.get("precision", None)
         if precision is None:
@@ -85,14 +85,15 @@ class GeohashManager(GeoUtils):
             if type(geohash) == str:
                 ### str to obj
                 geohash = GeohashObject(
-                    geohash=geohash, rect=self.geohash_rect(geohash)
+                    geohash_str=geohash, rect=self.geohash_rect(geohash)
                 )
-                precision = len(geohash.geohash)
+                precision = len(geohash.geohash_str)
             elif type(geohash) == GeohashObject:
                 pass
             else:
                 raise ValueError("geohash must be str or GeohashObject")
         assert type(geohash) == GeohashObject
+        ret["geohash"] = geohash
         center_rect = geohash.bbox
         ## outer rect generation
         x_diff = geohash.bbox[2] - geohash.bbox[0]
@@ -144,7 +145,7 @@ class GeohashManager(GeoUtils):
         directions = rotate(directions, num_rotate)
         for direction in directions:
             ret["order"].append(direction)
-            ret["geohashes"].append(
+            ret["neighbers"].append(
                 self.neighber(geohash=geohash, precision=precision, direction=direction)
             )
         return Geohashes(**ret)

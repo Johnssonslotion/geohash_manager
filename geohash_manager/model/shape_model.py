@@ -159,7 +159,7 @@ class GeohashObject(BaseModel):
     geohash object
     """
 
-    geohash: str = Field(description="geohash string")
+    geohash_str: str = Field(description="geohash string")
     rect: RectShape = Field(description="geohash bounding box")
 
     @property
@@ -187,6 +187,7 @@ class GeohashObject(BaseModel):
 
 
 class Geohashes(BaseModel):
-    geohashes: List[GeohashObject] = Field(description="geohash list")
+    neighbers: List[GeohashObject] = Field(description="geohash objects list")
+    geohash: GeohashObject = Field(description="current geohash object")
     order: List[str] = Field(description="order of geohash list")
     outer_rect: RectShape = Field(description="outer bbox of geohash list")
