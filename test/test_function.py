@@ -101,14 +101,24 @@ def test_position_neighbor(manager: GeohashManager):
     assert len(geohash_obj.bbox) == 4, f"bbox : {geohash_obj.bbox}"
 
 
-def test_position_neighbors(manager: GeohashManager):
-    curent_position = (127.96875, 34.8046875)
-    precision = 6
-    ## neighbors : input position or geohash, precision nullable direction
-    geohashes = manager.neighbors(position=curent_position, precision=precision)
-    assert len(geohashes.geohashes) == 8, f"neighbor_geohash : {geohashes.geohashes}"
-    assert len(geohashes.order) == 8, f"order : {geohashes.order}"
-    assert type(geohashes.outer_rect) == RectShape, "outer type check"
-
-    # assert len(geohash_obj.geohash) == 6, f"neighbor_geohash : {geohash_obj.geohash}"
-    # assert len(geohash_obj.bbox) == 4, f"bbox : {geohash_obj.bbox}"
+@pytest.mark.parametrize(
+    "input_param,output_param",
+    [({"position": (127.96875, 34.8046875)}, True), ({"geohash": "wydbb"}, True)],
+)
+def test_position_neighbors(manager: GeohashManager, input_param, output_param):
+    if "position" in input_param.keys():
+        curent_position = input_param["position"]
+        precision = 6
+        ## neighbors : input position or geohash, precision nullable direction
+        geohashes = manager.neighbors(position=curent_position, precision=precision)
+        assert (
+            len(geohashes.geohashes) == 8
+        ), f"neighbor_geohash : {geohashes.geohashes}"
+        assert len(geohashes.order) == 8, f"order : {geohashes.order}"
+        assert type(geohashes.outer_rect) == RectShape, "outer type check"
+    elif "geohash" in input_param.keys():
+        geohash = input_param
+        precision = 6
+        geohashes = manager.neighbors(geohash=geohash, precision=precision)
+    else:
+        raise ValueError("input_param must be current_position or geohash")

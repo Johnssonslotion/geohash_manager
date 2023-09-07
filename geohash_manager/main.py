@@ -83,6 +83,15 @@ class GeohashManager(GeoUtils):
             bias = kwargs.get("bias", None)
             assert geohash is not None, "geohash or position must be not None"
 
+            if type(geohash) == str:
+                ### str to obj
+                geohash = GeohashObject(
+                    geohash=geohash, rect=self.geohash_rect(geohash)
+                )
+            elif type(geohash) == GeohashObject:
+                pass
+            else:
+                raise ValueError("geohash must be str or GeohashObject")
         assert type(geohash) == GeohashObject
         center_rect = geohash.bbox
         ## outer rect generation
